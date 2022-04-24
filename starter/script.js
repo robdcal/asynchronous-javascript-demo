@@ -327,40 +327,101 @@ TEST DATA: Images in the img folder. Test the error handler by passing a wrong i
 GOOD LUCK 😀
 */
 
-const images = document.querySelector('.images')
+// const images = document.querySelector('.images')
 
-const createImage = imgPath => {
-    return new Promise(function (resolve, reject) {
-        const img = document.createElement('img')
-        img.src = imgPath
-        img.addEventListener('load', function () {
-            images.append(img)
-            resolve(img)
-        })
-        img.addEventListener('error', function () {
-            reject(new Error('Image not found'))
-        })
-        // resolve(images.insertAdjacentHTML('beforeend', img.outerHTML))
-        // reject(err => console.error(err))
+// const createImage = imgPath => {
+//     return new Promise(function (resolve, reject) {
+//         const img = document.createElement('img')
+//         img.src = imgPath
+//         img.addEventListener('load', function () {
+//             images.append(img)
+//             resolve(img)
+//         })
+//         img.addEventListener('error', function () {
+//             reject(new Error('Image not found'))
+//         })
+//     })
+// }
+
+// let currentImg
+
+// createImage('img/img-1.jpg')
+//     .then(img => {
+//         currentImg = img
+//         return wait(2)
+//     })
+//     .then(() => {
+//         currentImg.style.display = 'none'
+//         return createImage('img/img-2.jpg')
+//     })
+//     .then(img => {
+//         currentImg = img
+//         return wait(2)
+//     })
+//     .then(() => {
+//         currentImg.style.display = 'none'
+//     })
+//     .catch(err => console.error(err))
+
+// const whereAmI = async function (country) {
+//     try {
+//         // Geolocation
+//         const pos = await getPosition()
+//         const {
+//             latitude: lat,
+//             longitude: lng
+//         } = pos.coords
+
+//         // Reverse geocoding
+//         const resGeo = await fetch(`https://geocode.xyz/${lat},${lng}?geoit=json`)
+//         if (!resGeo.ok) throw new Error('Problem getting location data')
+//         const dataGeo = await resGeo.json()
+
+//         // Country data
+//         const res = await fetch(`https://restcountries.com/v2/name/${dataGeo.country}/`)
+//         if (!res) throw new Error('Problem getting country')
+//         const data = await res.json()
+//         renderCountry(data[0])
+//         countriesContainer.style.opacity = 1
+
+//         return `You are in ${dataGeo.city}, ${dataGeo.country}.`
+//     } catch (err) {
+//         console.error(err)
+//         renderError(`Something went wrong, ${err.message}`)
+//         throw err
+//     }
+// }
+
+// btn.addEventListener('click', function () {
+//     (async function () {
+//         try {
+//             const location = await whereAmI()
+//         } catch (err) {
+//             console.error(`${err.message}`)
+//         }
+//         console.log('Finished getting location')
+//     })()
+// })
+
+const getJSON = function (url, errorMsg = 'Something went wrong') {
+    return fetch(url).then(response => {
+        if (!response.ok)
+            throw new Error(`${errorMsg} (${response.status})`)
+        return response.json()
     })
 }
 
-let currentImg
+const get3Countries = async function (c1, c2, c3) {
+    try {
+        const data = await Promise.all([
+            getJSON(`https://restcountries.com/v2/name/${c1}/`),
+            getJSON(`https://restcountries.com/v2/name/${c2}/`),
+            getJSON(`https://restcountries.com/v2/name/${c3}/`)
+        ])
+        console.log(data.map(d => d[0].capital))
+    } catch (err) {
+        console.error(err)
+    }
+}
 
-createImage('img/img-1.jpg')
-    .then(img => {
-        currentImg = img
-        return wait(2)
-    })
-    .then(() => {
-        currentImg.style.display = 'none'
-        return createImage('img/img-2.jpg')
-    })
-    .then(img => {
-        currentImg = img
-        return wait(2)
-    })
-    .then(() => {
-        currentImg.style.display = 'none'
-    })
-    .catch(err => console.error(err))
+get3Countries('portugal', 'canada', 'tanzania')
