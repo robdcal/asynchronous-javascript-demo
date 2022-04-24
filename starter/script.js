@@ -104,13 +104,13 @@ const renderError = function (message) {
 //     })
 // }
 
-const getJSON = function (url, errorMsg = 'Something went wrong') {
-    return fetch(url).then(response => {
-        if (!response.ok)
-            throw new Error(`${errorMsg} (${response.status})`)
-        return response.json()
-    })
-}
+// const getJSON = function (url, errorMsg = 'Something went wrong') {
+//     return fetch(url).then(response => {
+//         if (!response.ok)
+//             throw new Error(`${errorMsg} (${response.status})`)
+//         return response.json()
+//     })
+// }
 
 // const getCountryData = function (country) {
 //     fetch(`https://restcountries.com/v2/name/${country}/`)
@@ -227,29 +227,77 @@ GOOD LUCK 😀
 
 // whereAmI(52.508, 13.381)
 
-const lotteryPromise = new Promise(function (resolve, reject) {
-    console.log("Lottery draw is happening")
-    setTimeout(function () {
-        if (Math.random() >= 0.5) {
-            resolve('You WIN')
-        } else {
-            reject(new Error('You lost your money'))
-        }
-    }, 2000)
-})
+// const lotteryPromise = new Promise(function (resolve, reject) {
+//     console.log("Lottery draw is happening")
+//     setTimeout(function () {
+//         if (Math.random() >= 0.5) {
+//             resolve('You WIN')
+//         } else {
+//             reject(new Error('You lost your money'))
+//         }
+//     }, 2000)
+// })
 
-lotteryPromise.then(res => console.log(res)).catch(err => console.error(err))
+// lotteryPromise.then(res => console.log(res)).catch(err => console.error(err))
 
-const wait = function (seconds) {
-    return new Promise(function (resolve) {
-        setTimeout(resolve, seconds * 1000)
+// const wait = function (seconds) {
+//     return new Promise(function (resolve) {
+//         setTimeout(resolve, seconds * 1000)
+//     })
+// }
+
+// wait(2).then(() => {
+//     console.log("I waited for 2 seconds")
+//     return wait(1)
+// }).then(() => console.log("I waited for 1 second"))
+
+// Promise.resolve("abc").then(x => console.log(x))
+// Promise.reject("abc").then(x => console.error(x))
+
+
+
+const getPosition = function () {
+    return new Promise(function (resolve, reject) {
+        navigator.geolocation.getCurrentPosition(resolve, reject)
     })
 }
 
-wait(2).then(() => {
-    console.log("I waited for 2 seconds")
-    return wait(1)
-}).then(() => console.log("I waited for 1 second"))
+// getPosition().then(pos => console.log(pos))
 
-Promise.resolve("abc").then(x => console.log(x))
-Promise.reject("abc").then(x => console.error(x))
+const whereAmI = function () {
+    getPosition()
+        .then(pos => {
+            const {
+                latitude: lat,
+                longitude: lng
+            } = pos.coords
+            return fetch(`https://geocode.xyz/${lat},${lng}?geoit=json`)
+        })
+        .then(response => {
+            if (response.status === 403)
+                throw new Error(`Rate limit reached (Error code: ${response.status})`)
+            return response.json()
+        })
+        .then(data => {
+            console.log(`You are in ${data.city}, ${data.country}`)
+            return fetch(`https://restcountries.com/v2/name/${data.country}/`)
+        })
+        .then(response => {
+            console.log(response)
+            return response.json()
+        })
+        .then(data => {
+            console.log(data[0])
+            renderCountry(data[0])
+        })
+        .catch(err => console.log(`Something went wrong. ${err.message}`))
+        .finally(() => {
+            countriesContainer.style.opacity = 1
+        })
+}
+
+// whereAmI(52.508, 13.381)
+
+btn.addEventListener('click', function () {
+    whereAmI()
+})
